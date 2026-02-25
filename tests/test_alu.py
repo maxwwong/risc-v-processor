@@ -6,26 +6,27 @@ from cocotb_tools.runner import get_runner
 from cocotb.triggers import Timer
 from random import randint
 
+async def test_op(dut, a, b, op_func):
+    dut.a.value = a
+    dut.b.value = b
+    expected_result = op_func(a, b)
+
+    await Timer(1, unit="ns")
+
+    result = dut.result.value
+
+    assert result == expected_result, f"Expected {expected_result}. Received {result}"
+
 @cocotb.test()
 async def test_add(dut):
-    async def run_add_test(a,b):
-        dut.a.value = a
-        dut.b.value = b
-        expected_result = (a+b) & 0xFFFFFFFF
-
-        await Timer(1, unit="ns")
-
-        result = dut.result.value
-
-        assert result == expected_result, f"Expected {expected_result}. Received {result}"
-
+    dut.op.value = 0
 
     # Test 0 + 0
-    await run_add_test(0, 0)
+    await test_op(dut, 0, 0, lambda x, y: (x + y) & 0xFFFFFFFF)
 
     # Test max input + max input
     
-    await run_add_test(0xFFFFFFFF, 0xFFFFFFFF)
+    await test_op(dut, 0xFFFFFFFF, 0xFFFFFFFF, lambda x, y: (x + y) & 0xFFFFFFFF)
 
     await Timer(1, unit="ns")
 
@@ -34,59 +35,71 @@ async def test_add(dut):
         a = randint(0, 2**32-1)
         b = randint(0, 2**32-1)
 
-        await run_add_test(a, b)
+        await test_op(dut, a, b, lambda x, y: (x + y) & 0xFFFFFFFF)
 
 @cocotb.test()
-async def test_sub(dut):
-    async def run_sub_test(a, b):
-        dut.a.value = a
-        dut.b.value = b
-        expected_result = (a-b) & 0xFFFFFFFF
-
-        await Timer(1, unit="ns")
-
-        result = dut.result.value
-
-        assert result == expected_result, f"Expected {expected_result}. Received {result}"
-    
+async def test_sub(dut):    
     dut.op.value = 1
 
     # Test 0 - 0
 
-    await run_sub_test(0, 0)
+    await test_op(dut, 0, 0, lambda x, y: (x - y) & 0xFFFFFFFF)
 
     # Test max_input - max_input
 
-    await run_sub_test(0xFFFFFFFF, 0xFFFFFFFF)
+    await test_op(dut, 0xFFFFFFFF, 0xFFFFFFFF, lambda x, y: (x - y) & 0xFFFFFFFF)
 
     # Test 0 - max_input 
 
-    await run_sub_test(0, 0xFFFFFFFF)
+    await test_op(dut, 0, 0xFFFFFFFF, lambda x, y: (x - y) & 0xFFFFFFFF)
 
     for _ in range(10000):
         a = randint(0, 2**32-1)
         b = randint(0, 2**32-1)
 
-        await run_sub_test(a, b)
+        await test_op(dut, 0, 0, lambda x, y: (x - y) & 0xFFFFFFFF)
 
 
 
 
 @cocotb.test()
 async def test_and(dut):
-    pass
+    dut.op.value = 2
+
+    for _ in range(10000):
+        a = randint(0, 2**32-1)
+        b = randint(0, 2**32-1)
+
+        await test_op(dut, a, b, lambda x, y: x & y)
 
 @cocotb.test()
 async def test_or(dut):
-    pass
+    dut.op.value = 3
+
+
+    for _ in range(10000):
+        a = randint(0, 2**32-1)
+        b = randint(0, 2**32-1)
+
+        await test_op(dut, a, b, lambda x, y: (x | y))
 
 @cocotb.test()
 async def test_xor(dut):
-    pass
+    dut.op.value = 4
+    
+    for _ in range(10000):
+        a = randint(0, 2**32-1)
+        b = randint(0, 2**32-1)
+
+        await test_op(dut, a, b, lambda x, y: x ^ y)
 
 @cocotb.test()
 async def test_sll(dut):
-    pass
+    dut.op.value = 5
+
+    for _ in range(10000):
+        a = randint(0, 2**32-1)
+        b = randint(0, 2**32-1)
 
 @cocotb.test()
 async def test_sra(dut):
