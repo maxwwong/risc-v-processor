@@ -36,8 +36,73 @@ async def test_add(dut):
 
         await run_add_test(a, b)
 
+@cocotb.test()
+async def test_sub(dut):
+    async def run_sub_test(a, b):
+        dut.a.value = a
+        dut.b.value = b
+        expected_result = (a-b) & 0xFFFFFFFF
+
+        await Timer(1, unit="ns")
+
+        result = dut.result.value
+
+        assert result == expected_result, f"Expected {expected_result}. Received {result}"
+    
+    dut.op.value = 1
+
+    # Test 0 - 0
+
+    await run_sub_test(0, 0)
+
+    # Test max_input - max_input
+
+    await run_sub_test(0xFFFFFFFF, 0xFFFFFFFF)
+
+    # Test 0 - max_input 
+
+    await run_sub_test(0, 0xFFFFFFFF)
+
+    for _ in range(10000):
+        a = randint(0, 2**32-1)
+        b = randint(0, 2**32-1)
+
+        await run_sub_test(a, b)
 
 
+
+
+@cocotb.test()
+async def test_and(dut):
+    pass
+
+@cocotb.test()
+async def test_or(dut):
+    pass
+
+@cocotb.test()
+async def test_xor(dut):
+    pass
+
+@cocotb.test()
+async def test_sll(dut):
+    pass
+
+@cocotb.test()
+async def test_sra(dut):
+    pass
+
+@cocotb.test()
+async def test_srl(dut):
+    pass
+
+@cocotb.test()
+async def test_slt(dut):
+    pass
+
+@cocotb.test()
+async def test_sltu(dut):
+    pass
 
 
 
