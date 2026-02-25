@@ -8,26 +8,24 @@ from random import randint
 
 @cocotb.test()
 async def test_add(dut):
-    """Test Add"""
+    async def run_add_test(a,b):
+        dut.a.value = a
+        dut.b.value = b
+        expected_result = (a+b) & 0xFFFFFFFF
+
+        await Timer(1, unit="ns")
+
+        result = dut.result.value
+
+        assert result == expected_result, f"Expected {expected_result}. Received {result}"
+
 
     # Test 0 + 0
-    dut.op.value = 0
-    dut.a.value = 0x00000000
-    dut.b.value = 0x00000000
-
-    await Timer(1, unit="ns")
-
-    assert dut.result.value == 0, f"Expected 0, got {dut.result.value}"
+    await run_add_test(0, 0)
 
     # Test max input + max input
-    await Timer(1, unit="ns")
-
-    dut.a.value = 0xFFFFFFFF
-    dut.b.value = 0xFFFFFFFF
-
-    await Timer(1, unit="ns")
-
-    assert int(dut.result.value) == int(0x1FFFFFFE), f"Expected 4294967294, got {int(dut.result.value)}"
+    
+    await run_add_test(0xFFFFFFFF, 0xFFFFFFFF)
 
     await Timer(1, unit="ns")
 
@@ -36,15 +34,7 @@ async def test_add(dut):
         a = randint(0, 2**32-1)
         b = randint(0, 2**32-1)
 
-        dut.a.value = a
-        dut.b.value = b
-
-        await Timer(1, unit="ns")
-
-        exp_result = (a + b) & 0xFFFFFFFF
-        act_result = dut.result.value
-
-        assert int(exp_result) == int(act_result), f"Expected {exp_result}, got {act_result}"
+        await run_add_test(a, b)
 
 
 
