@@ -1,4 +1,4 @@
-module pc #(
+module program_counter #(
     parameter MEM_WIDTH = 32
 ) (
     input wire clk,
